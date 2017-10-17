@@ -25,14 +25,14 @@ cNot (CBool cb) = CBool (flip cb)
 cAnd (CBool cb1) (CBool cb2) = CBool (cb1 cb2 cFalse')
 cOr  (CBool cb1) (CBool cb2) = CBool (cb1 cTrue' cb2)
 
-instance Church Int where
-  newtype C Int = CNat (forall r. (r -> r) -> r -> r)
+instance Church Word where
+  newtype C Word = CNat (forall r. (r -> r) -> r -> r)
   fromChurch (CNat cn) = cn (+1) 0
   toChurch 0 = CNat $ \f z -> z
-  toChurch n = CNat $ \f z -> let CNat x = toChurch (n-1)
-                               in f (x f z)
+  toChurch n = CNat $ \f z -> let CNat n' = toChurch (n-1)
+                               in f (n' f z)
 
-instance Num (C Int) where
+instance Num (C Word) where
   CNat cn1 + CNat cn2 = CNat $ \f -> cn1 f . cn2 f
   CNat cn1 * CNat cn2 = CNat $ cn1 . cn2
   (-) = undefined
@@ -58,4 +58,4 @@ instance Church [a] where
   toChurch (x:xs) = CList $ \f z -> let CList l' = toChurch xs in f x (l' f z)
 
 main :: IO ()
-main = print $ (3 + 1 :: C Int)
+main = print $ (3 + 1 :: C Word)
