@@ -51,5 +51,11 @@ instance Church (Either a b) where
   toChurch (Left l)  = CEither $ \fl _ -> fl l
   toChurch (Right r) = CEither $ \_ fr -> fr r
 
+instance Church [a] where
+  newtype C [a] = CList (forall r. (a -> r -> r) -> r -> r)
+  fromChurch (CList cl) = cl (:) []
+  toChurch []     = CList $ \_ z -> z
+  toChurch (x:xs) = CList $ \f z -> let CList l' = toChurch xs in f x (l' f z)
+
 main :: IO ()
 main = print $ (3 + 1 :: C Int)
